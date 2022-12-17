@@ -7,11 +7,11 @@ import type { IStatBlock } from "./StatBlock.layout";
 //
 
 const Item: FC<IStatBlock> = ({ label, value, icon }) => {
-  const { svg, ...colors } = icon;
+  const { svg, color, bgColor } = icon;
 
   return (
     <Root>
-      <Icon {...colors}>{svg}</Icon>
+      <Icon $bgColor={bgColor} $color={color}>{svg}</Icon>
       <div className="texts">
         <div>
           <CountUp end={value || 0} duration={3} />
@@ -59,9 +59,12 @@ const Root = styled.li`
   }
 `;
 
+// $prop - prevent passing props to DOM node
+// https://styled-components.com/docs/api#transient-props
+
 interface IconProps {
-  bgColor: string;
-  color: string;
+  $bgColor: string;
+  $color: string;
 }
 
 const Icon = styled.div<IconProps>`
@@ -71,8 +74,8 @@ const Icon = styled.div<IconProps>`
   width: 50px;
   height: 50px;
   border-radius: 100%;
-  background-color: ${(props) => props.bgColor};
-  color: ${(props) => props.color};
+  background-color: ${(props) => props.$bgColor};
+  color: ${(props) => props.$color};
   font-size: 1.5rem;
 
   @media screen and (max-width: 500px) {
