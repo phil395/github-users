@@ -86,11 +86,15 @@ const parseContributions = (svg: Element): IWeeklyContribution[] => {
   return [...weeksElements].map((weekElement) => {
     const dayElements = weekElement.querySelectorAll("rect");
 
-    return [...dayElements].map<IDailyContribution>((dayElement) => ({
-      date: dayElement.getAttribute("data-date") ?? "",
-      counter: parseInt(dayElement.getAttribute("data-count") ?? ""),
-      colorLevel: parseInt(dayElement.getAttribute("data-level") ?? ""),
-    })) as IWeeklyContribution;
+    return [...dayElements].map<IDailyContribution>((dayElement) => {
+      const date = dayElement.getAttribute("data-date") ?? '';
+      const colorLevel = parseInt(dayElement.getAttribute("data-level") ?? '');
+      let counter = 0;
+      if (colorLevel) {
+        counter = parseInt(dayElement.textContent ?? '');
+      }
+      return { date, counter, colorLevel };
+    }) as IWeeklyContribution;
   });
 };
 
