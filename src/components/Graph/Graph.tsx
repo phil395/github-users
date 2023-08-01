@@ -20,7 +20,7 @@ import {
 // styles
 import { graphColors } from "@styles";
 // types
-import type { IDailyContribution } from "@models/contributions";
+import type { DailyContributions } from "@models/contributions";
 import type { ITooltipCommands } from "src/components/Tooltip/Tooltip";
 //
 
@@ -140,7 +140,7 @@ const Graph: FC<Props> = ({ className, isMobile }) => {
           </svg>
 
           <Tooltip ref={tooltip}>
-            {(dayData: IDailyContribution) => (
+            {(dayData: DailyContributions) => (
               <>
                 <div className={`level-${dayData.colorLevel}`}></div>
                 <div className="counter">{dayData.counter} contributions</div>

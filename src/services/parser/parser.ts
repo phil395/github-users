@@ -4,9 +4,9 @@ import { getContributionsCounters } from "./calculation";
 // types
 import { IAchievement } from "@models/achievement";
 import type {
-  IDailyContribution,
-  IWeeklyContribution,
-  IYearContribution,
+  DailyContributions,
+  WeeklyContributions,
+  YearContributions,
 } from "@models/contributions";
 import { IParsedData } from "@models/parsedData";
 //
@@ -80,13 +80,13 @@ const selectAchievements = (
   }));
 };
 
-const parseContributions = (svg: Element): IWeeklyContribution[] => {
+const parseContributions = (svg: Element): WeeklyContributions[] => {
   const weeksElements = svg?.querySelectorAll("g");
 
   return [...weeksElements].map((weekElement) => {
     const dayElements = weekElement.querySelectorAll("rect");
 
-    return [...dayElements].map<IDailyContribution>((dayElement) => {
+    return [...dayElements].map<DailyContributions>((dayElement) => {
       const date = dayElement.getAttribute("data-date") ?? '';
       const colorLevel = parseInt(dayElement.getAttribute("data-level") ?? '');
       let counter = 0;
@@ -94,7 +94,7 @@ const parseContributions = (svg: Element): IWeeklyContribution[] => {
         counter = parseInt(dayElement.textContent ?? '');
       }
       return { date, counter, colorLevel };
-    }) as IWeeklyContribution;
+    }) as WeeklyContributions;
   });
 };
 
@@ -158,7 +158,7 @@ const getContributionsPage = async (
   };
 };
 
-const getContributions = (document: Document): IWeeklyContribution[] => {
+const getContributions = (document: Document): WeeklyContributions[] => {
   const graphNode = selectGraph(document, SELECTORS.graph);
   return parseContributions(graphNode);
 };
@@ -182,7 +182,7 @@ const getContributionsByYears = async (login: string, years: number[]) => {
   const reqByPages = years.map((year) => getContributionsPage(login, year));
   const pages = await Promise.all(reqByPages);
 
-  return pages.map<IYearContribution>(({ year, page }) => ({
+  return pages.map<YearContributions>(({ year, page }) => ({
     year,
     data: getContributions(page),
   }));

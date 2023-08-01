@@ -1,7 +1,7 @@
 // others
 import { getMonthName } from "@utils";
 // types
-import type { IWeeklyContribution } from "@models/contributions";
+import type { WeeklyContributions } from "@models/contributions";
 
 type findIndexArg = {
   indexInArray: number;
@@ -41,7 +41,7 @@ export const findIndexOfDay = ({
   return new Date(date).getDay();
 };
 
-export const calculateTotal = (list: IWeeklyContribution[]): number => {
+export const calculateTotal = (list: WeeklyContributions[]): number => {
   return list.reduce(
     (acc, weekData) =>
       acc +
@@ -54,7 +54,7 @@ export const calculateTotal = (list: IWeeklyContribution[]): number => {
 
 export const getMonthsNameRenderMap = (
   sizes: GraphSizes,
-  weeksList: IWeeklyContribution[]
+  weeksList: WeeklyContributions[]
 ) => {
   const map: {
     [year: number]: {

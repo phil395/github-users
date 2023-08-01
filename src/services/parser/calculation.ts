@@ -3,16 +3,16 @@ import { getMonthName } from "@utils";
 // types
 import { IHeatmapChart } from "@models/charts";
 import {
-	IContributionCounters,
-	IWeeklyContribution,
-	IYearContribution,
+	ContributionCounters,
+	WeeklyContributions,
+	YearContributions,
 } from "@models/contributions";
 
 
 export const getContributionsCounters = (
-	contributionsByYears: IYearContribution[],
-	lastYearContributions: IWeeklyContribution[]
-): IContributionCounters => {
+	contributionsByYears: YearContributions[],
+	lastYearContributions: WeeklyContributions[]
+): ContributionCounters => {
 	const byMonths = calculateDataForHeatmap(contributionsByYears);
 	const lastYear = calculateTotalInLastYear(lastYearContributions);
 	const total = calculationTotal(byMonths);
@@ -28,7 +28,7 @@ const calculationTotal = (dataByMonths: IHeatmapChart[]) => {
 	return dataByMonths.reduce((acc, month) => acc + month.value, 0);
 };
 
-const calculateTotalInLastYear = (list: IWeeklyContribution[]): number => {
+const calculateTotalInLastYear = (list: WeeklyContributions[]): number => {
 	return list.reduce(
 		(acc, weekData) =>
 			acc +
@@ -38,7 +38,7 @@ const calculateTotalInLastYear = (list: IWeeklyContribution[]): number => {
 };
 
 /** Calculate data for heatmap Chart */
-const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
+const calculateDataForHeatmap = (contributions: YearContributions[]) => {
 	// implementation #1
 	// console.time('implementation #1');
 	const map: {
@@ -84,16 +84,16 @@ const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
 
 	return data;
 	/*
-		{	
+		{
 			// ======================================== implementation #2
 			console.time('implementation #2');
 			const map = new Map() as Map<string, number>;
-	
+
 			for (const year of contributions) {
 				for (const week of year.data) {
 					for (const day of week) {
 						const month = montsMap.get(new Date(day.date).getMonth())!;
-	
+
 						const key = `${year}.${month}`;
 						const prevValue = map.get(key) ?? 0;
 						map.set(key, prevValue + day.counter);
@@ -101,10 +101,10 @@ const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
 				}
 			}
 			console.timeEnd('implementation #2');	 // 12-15 ms
-	
+
 		}
-	
-		{	
+
+		{
 			// ======================================== implementation #3
 			console.time('implementation #3');
 			for (const year of contributions) {
@@ -113,7 +113,7 @@ const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
 						const month = formatDate(day.date, {			// So slow
 							month: 'short'
 						});
-	
+
 						if (year.year in map) {
 							if (month in map[year.year]) {
 								map[year.year][month] += day.counter;
@@ -124,7 +124,7 @@ const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
 								continue;
 							}
 						}
-	
+
 						map[year.year] = {
 							[month]: day.counter
 						};
@@ -133,9 +133,9 @@ const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
 			}
 			console.timeEnd('implementation #3');  // 600 - 800 ms
 		}
-	
-	
-		{	
+
+
+		{
 			// ======================================== implementation #4
 			console.time('implementation #4');
 			const map = contributions.reduce((map, year) => {
@@ -146,11 +146,11 @@ const calculateDataForHeatmap = (contributions: IYearContribution[]) => {
 						map.set(key, prevValue + day.counter);
 					});
 				});
-	
+
 				return map;
 			}, new Map() as Map<string, number>);
 			console.timeEnd('implementation #4');			// 12-15 ms
 		}
-	
+
 	 */
 };
