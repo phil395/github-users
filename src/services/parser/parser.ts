@@ -12,8 +12,13 @@ import { IParsedData } from "@models/parsedData";
 //
 
 const SELECTORS = {
-  // from 'view-source:https://github.com/wesbos'
-  graph: "svg.js-calendar-graph-svg g",
+  day: {
+    element: "[data-date][data-level]",
+    attributes: {
+      date: "data-date",
+      level: "data-level",
+    }
+  },
   years: [
     '#year-list-container li a[id^="year-link"]',
     '#js-contribution-activity li a[id^="year-link"]',
@@ -52,10 +57,13 @@ const buildDocument = (htmlText: string): Document => {
   return parser.parseFromString(htmlText, "text/html");
 };
 
-const selectGraph = (document: Document, selector: string): Element => {
-  const graphTag = document.querySelector(selector);
-  if (!graphTag) throw new Error("Svg graph not found");
-  return graphTag;
+const selectDays = (document: Document, dayElementSelector: string): Element[] => {
+  const days = document.querySelectorAll(dayElementSelector);
+  if (!days.length) {
+    throw new Error(`Could not find the 'days' on the github page
+    by the specified selector: '${dayElementSelector}'`)
+  };
+  return Array.from(days);
 };
 
 const selectYears = (
@@ -80,22 +88,37 @@ const selectAchievements = (
   }));
 };
 
-const parseContributions = (svg: Element): WeeklyContributions[] => {
-  const weeksElements = svg?.querySelectorAll("g");
 
-  return [...weeksElements].map((weekElement) => {
-    const dayElements = weekElement.querySelectorAll("rect");
-
-    return [...dayElements].map<DailyContributions>((dayElement) => {
-      const date = dayElement.getAttribute("data-date") ?? '';
-      const colorLevel = parseInt(dayElement.getAttribute("data-level") ?? '');
-      let counter = 0;
-      if (colorLevel) {
-        counter = parseInt(dayElement.textContent ?? '');
-      }
-      return { date, counter, colorLevel };
-    }) as WeeklyContributions;
-  });
+const parseContributions = (dayElements: Element[]): WeeklyContributions[] => {
+  const result: WeeklyContributions[] = []
+  const days: DailyContributions[] = []
+  for (const dayEl of dayElements) {
+    const childText = dayEl.children[0].textContent
+    const dateStr = dayEl.getAttribute(SELECTORS.day.attributes.date)
+    const level = dayEl.getAttribute(SELECTORS.day.attributes.level)
+    if (!childText || !dateStr || !level) {
+      throw new Error('Could not parse the daily contributions')
+    }
+    const day: DailyContributions = {
+      date: dateStr,
+      colorLevel: parseInt(level),
+      counter: parseInt(childText) || 0,
+    }
+    days.push(day)
+  }
+  days.sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
+  let firstDayNumber = new Date(days[0].date).getDay()
+  let week: WeeklyContributions = []
+  for (const day of days) {
+    if (week.length === 7 - firstDayNumber) {
+      result.push(week)
+      week = []
+      firstDayNumber = 0
+    }
+    week.push(day)
+  }
+  if (week.length) result.push(week)
+  return result
 };
 
 const parseYears = (nodes: NodeListOf<Element>): number[] => {
@@ -159,8 +182,8 @@ const getContributionsPage = async (
 };
 
 const getContributions = (document: Document): WeeklyContributions[] => {
-  const graphNode = selectGraph(document, SELECTORS.graph);
-  return parseContributions(graphNode);
+  const days = selectDays(document, SELECTORS.day.element);
+  return parseContributions(days);
 };
 
 const getYears = (document: Document): number[] => {
